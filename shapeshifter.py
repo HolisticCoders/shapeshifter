@@ -35,9 +35,40 @@ def get_shape_data(ctl):
 
     return data
 
-def save_shape(data, name):
+def export_shape(data, name):
+    """Write the shape data in a json file.
+    
+    :param data: data of the shape to be written.
+    :type data: list returned by ``get_shape_data``
+    :param name: name of the json file.
+    :type name: str
+    """
     directory = os.path.dirname(__file__)
-    print directory
+    shapes_dir = os.path.join(directory, 'shapes')
+
+    if not os.path.exists(shapes_dir):
+        os.makedirs(shapes_dir)
+
+    shape_path = os.path.join(shapes_dir, name + '.json')
+    with open(shape_path, 'w') as f:
+        f.write(json.dumps(data, indent=2))
+
+def import_shape(name):
+    """Get the shape data written in the corresponding json file.
+
+    :param name: name of the json file.
+    :type name: str
+    """
+    directory = os.path.dirname(__file__)
+    shapes_dir = os.path.join(directory, 'shapes')
+
+    if not os.path.exists(shapes_dir):
+        os.makedirs(shapes_dir)
+
+    shape_path = os.path.join(shapes_dir, name + '.json')
+
+    with open(shape_path, 'r') as f:
+        return json.loads(f.read()) 
 
 def create_curve(data):
     transform = cmds.createNode('transform')
