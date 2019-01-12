@@ -6,6 +6,11 @@ import maya.cmds as cmds
 
 
 def get_shape_data(ctl):
+    """Extract the shape data from a given controller
+    
+    :param ctl: name of the controller.
+    :type ctl: str
+    """
     data = []
     shapes = cmds.listRelatives(ctl, shapes=True)
     for shape in shapes:
@@ -71,6 +76,11 @@ def import_shape(name):
         return json.loads(f.read()) 
 
 def create_curve(data):
+    """Create a curve based on the given data.
+
+    :param data: data of the shape to be created.
+    :type data: list returned by ``get_shape_data`` or ``import_shape``
+    """
     transform = cmds.createNode('transform')
     for shape_data in data:
         crv = cmds.curve(
@@ -92,7 +102,14 @@ def create_curve(data):
 
     return transform
 
-def copy_shape_to(source, targets):
+def copy_shape(source, targets):
+    """Copy the shape from one controller to the targets.
+
+    :param source: controller to copy the shape from.
+    :type source: str
+    :param targets: controller(s) to copy the shape to.
+    :type source: str or list(str)
+    """
     if not isinstance(targets, list):
         targets = [targets]
     data = get_shape_data(source)
