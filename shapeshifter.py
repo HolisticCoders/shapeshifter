@@ -1,7 +1,6 @@
 import os
 import json
 
-from pprint import pprint
 import maya.cmds as cmds
 
 
@@ -30,6 +29,16 @@ def get_shape_data(ctl):
             rgb_colors.append(cmds.getAttr(shape + '.overrideColor' + color_channel))
         shape_data['color_rgb'] = rgb_colors
 
+        if not shape_data['enable_overrides']:
+            # get all of that from the transform instead
+            shape_data['enable_overrides'] = cmds.getAttr(ctl + '.overrideEnabled')
+            shape_data['use_rgb'] = cmds.getAttr(ctl + '.overrideRGBColors')
+            shape_data['color_index'] = cmds.getAttr(ctl + '.overrideColor')
+            rgb_colors = []
+            for color_channel in 'RGB':
+                rgb_colors.append(cmds.getAttr(ctl + '.overrideColor' + color_channel))
+            shape_data['color_rgb'] = rgb_colors
+
         # get the cvs local position
         cvs = cmds.ls(shape + '.cv[*]', flatten=True)
         cvs_pos = []
@@ -39,6 +48,7 @@ def get_shape_data(ctl):
         data.append(shape_data)
 
     return data
+
 
 def export_shape(data, name):
     """Write the shape data in a json file.
@@ -58,6 +68,7 @@ def export_shape(data, name):
     with open(shape_path, 'w') as f:
         f.write(json.dumps(data, indent=2))
 
+
 def import_shape(name):
     """Get the shape data written in the corresponding json file.
 
@@ -75,7 +86,8 @@ def import_shape(name):
     with open(shape_path, 'r') as f:
         return json.loads(f.read()) 
 
-def create_curve(data):
+
+def create_controller_from_data(data):
     """Create a curve based on the given data.
 
     :param data: data of the shape to be created.
@@ -95,12 +107,27 @@ def create_curve(data):
             if shape_data['use_rgb']:
                 cmds.setAttr(shape + '.overrideRGBColors', 1)
                 for color_channel, value in zip('RGB', shape_data['color_rgb']):
-                    print color_channel, value
                     cmds.setAttr(shape + '.overrideColor' + color_channel, value)
             else:
                 cmds.setAttr(shape + '.overrideColor', shape_data['color_index'])
 
     return transform
+
+
+def create_controller_from_name(name):
+    shape_data = import_shape(name)
+    ctl = create_controller_from_data(shape_data)
+    return ctl
+
+
+def change_controller_shape(ctl, data):
+    temp = create_controller_from_data(data)
+    new_shapes = cmds.listRelatives(temp, shapes=True)
+    cmds.delete(cmds.listRelatives(ctl, shapes=True))
+    for shape in new_shapes:
+        cmds.parent(shape, ctl, relative=True, shape=True)
+    cmds.delete(temp)
+
 
 def copy_shape(source, targets):
     """Copy the shape from one controller to the targets.
@@ -114,7 +141,7 @@ def copy_shape(source, targets):
         targets = [targets]
     data = get_shape_data(source)
     for target in targets:
-        temp = create_curve(data)
+        temp = create_controller_from_data(data)
         new_shapes = cmds.listRelatives(temp, shapes=True)
         cmds.delete(cmds.listRelatives(target, shapes=True))
         for shape in new_shapes:
