@@ -126,6 +126,7 @@ def change_controller_shape(ctl, data):
     cmds.delete(cmds.listRelatives(ctl, shapes=True))
     for shape in new_shapes:
         cmds.parent(shape, ctl, relative=True, shape=True)
+        cmds.rename(shape, ctl + 'Shape')
     cmds.delete(temp)
 
 
@@ -146,4 +147,5 @@ def copy_shape(source, targets):
         cmds.delete(cmds.listRelatives(target, shapes=True))
         for shape in new_shapes:
             cmds.parent(shape, target, relative=True, shape=True)
+            cmds.rename(shape, target + 'Shape')
         cmds.delete(temp)
