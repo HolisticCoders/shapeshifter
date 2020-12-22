@@ -18,7 +18,6 @@ class Curve(object):
         overrideRGBColors=False,
         useOutlinerColor=False,
         mobject=None,
-        curve=None,
     ):
         self.cvs = cvs
         self.degree = degree
@@ -28,7 +27,6 @@ class Curve(object):
         self.overrideRGBColors = overrideRGBColors
         self.useOutlinerColor = useOutlinerColor
         self.mobject = mobject
-        self.curve = curve
 
         if isinstance(outlinerColor, list):
             self.outlinerColor = Color(
@@ -59,13 +57,8 @@ class Curve(object):
     @classmethod
     def from_curve(cls, mobject):
         """Instantiate a Curve from a maya curve."""
-        if not mobject.hasFn(om2.MFn.kNurbsCurve):
-            raise TypeError("curve should have the `kNurbsCurve` function set")
-        curve = om2.MFnNurbsCurve(mobject)
-
         data = cls.get_shape_data(mobject)
-
-        return cls(mobject=mobject, curve=curve, **data)
+        return cls(mobject=mobject, **data)
 
     @staticmethod
     def get_shape_data(curve):
@@ -73,13 +66,13 @@ class Curve(object):
         if not curve.hasFn(om2.MFn.kNurbsCurve):
             raise TypeError("curve should have the `kNurbsCurve` function set")
 
-        curve = om2.MFnNurbsCurve(curve)
-        name = curve.name()
+        curve_fn = om2.MFnNurbsCurve(curve)
+        name = curve_fn.name()
 
-        knots = curve.knots()
-        cvs = curve.cvPositions()
-        form = curve.form
-        degree = curve.degree
+        knots = curve_fn.knots()
+        cvs = curve_fn.cvPositions()
+        form = curve_fn.form
+        degree = curve_fn.degree
         overrideRGBColors = cmds.getAttr("{}.overrideRGBColors".format(name))
         overrideColorRGB = cmds.getAttr("{}.overrideColorRGB".format(name))[0]
         overrideColorRGB = Color(
@@ -112,8 +105,8 @@ class Curve(object):
 
     def create(self, transform):
         """Create the maya curve."""
-        self.curve = om2.MFnNurbsCurve()
-        self.mobject = self.curve.create(
+        curve = om2.MFnNurbsCurve()
+        self.mobject = curve.create(
             self.cvs,
             self.knots,
             self.degree,
@@ -123,7 +116,7 @@ class Curve(object):
             transform,
         )
 
-        name = self.curve.name()
+        name = curve.name()
 
         cmds.setAttr("{}.overrideRGBColors".format(name), self.overrideRGBColors)
         cmds.setAttr(
