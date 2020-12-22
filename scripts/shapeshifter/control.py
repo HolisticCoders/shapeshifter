@@ -1,3 +1,4 @@
+import maya.api.OpenMaya as om2
 import maya.cmds as cmds
 
 from shapeshifter.curve import Curve
@@ -6,7 +7,7 @@ from shapeshifter.utils import get_mobject
 
 class Control(object):
     def __init__(self, curves, transform=None):
-        self.transform = transform
+        self.mobject = transform
         self.curves = curves
 
     @classmethod
@@ -19,8 +20,11 @@ class Control(object):
         return cls(curves)
 
     def create(self):
-        if self.transform is None:
-            self.transform = get_mobject(cmds.createNode("transform"))
+        if self.mobject is not None:
+            raise RuntimeError(
+                "Can't create a control that already has a transform. Use update instead"
+            )
+        self.mobject = get_mobject(cmds.createNode("transform"))
 
         for curve in self.curves:
-            curve.create(self.transform)
+            curve.create(self.mobject)
