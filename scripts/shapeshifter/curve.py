@@ -33,9 +33,6 @@ class Curve(object):
 
     @classmethod
     def from_dict(cls, data):
-        from pprint import pprint
-
-        pprint(data)
         return cls(**data)
 
     @classmethod

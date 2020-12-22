@@ -13,7 +13,6 @@ class Control(object):
     def from_dict(cls, data):
         curves = []
         for curve_data in data.values():
-            print(curve_data)
             curve = Curve.from_dict(curve_data)
             curves.append(curve)
 
