@@ -1,7 +1,8 @@
+from collections import namedtuple
 import maya.api.OpenMaya as om2
 import maya.cmds as cmds
 
-from shapeshifter.utils import get_mobject
+Color = namedtuple("Color", ["r", "g", "b"])
 
 
 class Curve(object):
@@ -11,11 +12,11 @@ class Curve(object):
         degree,
         form,
         knots,
-        outlinerColor,
-        overrideColorRGB,
-        overrideEnabled,
-        overrideRGBColors,
-        useOutlinerColor,
+        outlinerColor=Color(0, 0, 0),
+        overrideColorRGB=Color(0, 0, 0),
+        overrideEnabled=False,
+        overrideRGBColors=False,
+        useOutlinerColor=False,
         mobject=None,
         curve=None,
     ):
@@ -23,13 +24,33 @@ class Curve(object):
         self.degree = degree
         self.form = form
         self.knots = knots
-        self.outlinerColor = outlinerColor
-        self.overrideColorRGB = overrideColorRGB
         self.overrideEnabled = overrideEnabled
         self.overrideRGBColors = overrideRGBColors
         self.useOutlinerColor = useOutlinerColor
         self.mobject = mobject
         self.curve = curve
+
+        if isinstance(outlinerColor, list):
+            self.outlinerColor = Color(
+                outlinerColor[0],
+                outlinerColor[1],
+                outlinerColor[2],
+            )
+        elif isinstance(outlinerColor, Color):
+            self.outlinerColor = outlinerColor
+        else:
+            raise TypeError("outlinerColor needs to be either a list or a Color")
+
+        if isinstance(overrideColorRGB, list):
+            self.overrideColorRGB = Color(
+                overrideColorRGB[0],
+                overrideColorRGB[1],
+                overrideColorRGB[2],
+            )
+        elif isinstance(overrideColorRGB, Color):
+            self.overrideColorRGB = overrideColorRGB
+        else:
+            raise TypeError("overrideColorRGB needs to be either a list or a Color")
 
     @classmethod
     def from_dict(cls, data):
@@ -61,9 +82,20 @@ class Curve(object):
         degree = curve.degree
         overrideRGBColors = cmds.getAttr("{}.overrideRGBColors".format(name))
         overrideColorRGB = cmds.getAttr("{}.overrideColorRGB".format(name))[0]
+        overrideColorRGB = Color(
+            overrideColorRGB[0],
+            overrideColorRGB[1],
+            overrideColorRGB[2],
+        )
         overrideEnabled = cmds.getAttr("{}.overrideEnabled".format(name))
         useOutlinerColor = cmds.getAttr("{}.useOutlinerColor".format(name))
+
         outlinerColor = cmds.getAttr("{}.outlinerColor".format(name))
+        outlinerColor = Color(
+            outlinerColor[0],
+            outlinerColor[1],
+            outlinerColor[2],
+        )
 
         data = {
             "knots": knots,
@@ -96,15 +128,15 @@ class Curve(object):
         cmds.setAttr("{}.overrideRGBColors".format(name), self.overrideRGBColors)
         cmds.setAttr(
             "{}.overrideColorRGB".format(name),
-            self.overrideColorRGB[0],
-            self.overrideColorRGB[1],
-            self.overrideColorRGB[2],
+            self.overrideColorRGB.r,
+            self.overrideColorRGB.g,
+            self.overrideColorRGB.b,
         )
         cmds.setAttr("{}.overrideEnabled".format(name), self.overrideEnabled)
         cmds.setAttr("{}.useOutlinerColor".format(name), self.useOutlinerColor)
         cmds.setAttr(
             "{}.outlinerColor".format(name),
-            self.outlinerColor[0],
-            self.outlinerColor[1],
-            self.outlinerColor[2],
+            self.outlinerColor.r,
+            self.outlinerColor.g,
+            self.outlinerColor.b,
         )
