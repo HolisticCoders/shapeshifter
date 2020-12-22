@@ -64,7 +64,11 @@ class Curve(object):
     def get_shape_data(curve):
         """Get all the necessary data to recreate the given curve."""
         if not curve.hasFn(om2.MFn.kNurbsCurve):
-            raise TypeError("curve should have the `kNurbsCurve` function set")
+            raise TypeError(
+                "curve should have the `kNurbsCurve` function set, not {}".format(
+                    curve.apiTypeStr
+                )
+            )
 
         curve_fn = om2.MFnNurbsCurve(curve)
         name = curve_fn.name()
