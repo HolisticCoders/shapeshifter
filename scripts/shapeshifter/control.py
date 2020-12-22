@@ -55,6 +55,16 @@ class Control(object):
         for curve in self.curves:
             curve.create(self.mobject)
 
+    def set_transform(self, transform):
+        if isinstance(transform, basestring):
+            self.mobject = get_mobject(transform)
+        elif isinstance(transform, om2.MObject) and transform.hasFn(om2.MFn.kTransform):
+            self.mobject = transform
+        else:
+            raise TypeError(
+                "Transform should be a string or om2 mobject with the Transform mfn"
+            )
+
     def delete_shapes(self):
         if not self.mobject:
             raise RuntimeError(
