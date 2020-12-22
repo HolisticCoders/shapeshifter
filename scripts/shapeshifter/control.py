@@ -43,3 +43,23 @@ class Control(object):
 
         for curve in self.curves:
             curve.create(self.mobject)
+
+    def update(self):
+        """Update the curves of this control."""
+        if self.mobject is None:
+            raise RuntimeError(
+                "Can't update a control that doesn't have a transform. Use Control.create Instead"
+            )
+
+        self.delete_shapes()
+        for curve in self.curves:
+            curve.create(self.mobject)
+
+    def delete_shapes(self):
+        if not self.mobject:
+            raise RuntimeError(
+                "Can't delete the shapes of a control that hasn't been created yet."
+            )
+        transform_fn = om2.MFnTransform(self.mobject)
+        shapes = cmds.listRelatives(transform_fn.name(), shapes=True)
+        cmds.delete(shapes)
