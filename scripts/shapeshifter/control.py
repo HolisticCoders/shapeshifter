@@ -19,6 +19,21 @@ class Control(object):
 
         return cls(curves)
 
+    @classmethod
+    def from_control(cls, transform):
+        if isinstance(transform, basestring):
+            transform = get_mobject(transform)
+        transform_fn = om2.MFnTransform(transform)
+
+        curves = []
+        for i in range(transform_fn.childCount()):
+            child = transform.child(i)
+            if not child.hasFn(om2.MFn.kNurbsCurve):
+                continue
+            curve = Curve.from_curve(child)
+            curves.append(curve)
+        return cls(curves, transform)
+
     def create(self):
         if self.mobject is not None:
             raise RuntimeError(
